@@ -10,9 +10,11 @@ from board.models import Board
 
 CREATE_BOARD_URL = reverse("boards:boards")
 
+
 def create_user(**params):
     """ Function to create users easily """
     return get_user_model().objects.create_user(**params)
+
 
 class ModelTest(TestCase):
     """ Test Boards model """
@@ -24,7 +26,7 @@ class ModelTest(TestCase):
             name="Anais"
         )
         self.payload = {
-            "title": "anais@hotmail.com",
+            "title": "Anais Blog",
             "author": self.user.id
         }
         self.token = Token.objects.create(user=self.user)
@@ -34,11 +36,32 @@ class ModelTest(TestCase):
     def test_create_board_successfull(self):
         """ Test: Create a board successfully """
         res = self.client.post(CREATE_BOARD_URL, self.payload)
-        
-        self.assertIn("board_id", res.data)
+
+        self.assertIn("id", res.data["board"])
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    # def test_get_boards_from_user_successfull(self):
-    #     """ Test: Get boards from user """
-    #     board = self.client.post(CREATE_BOARD_URL, self.payload)
+    def test_create_board_error(self):
+        """ Test: Error on board creation """
+        wrong_payload = {
+            "title": "",
+            "author": self.user.id
+        }
 
+        res = self.client.post(CREATE_BOARD_URL, wrong_payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_boards_from_user_successfull(self):
+        """ Test: Get boards from user """
+        res = self.client.post(CREATE_BOARD_URL, self.payload)
+
+        res_get = self.client.get(
+            reverse(
+                "boards:boards",
+                kwargs={
+                    "user_id": self.user.id
+                }
+            )
+        )
+
+        self.assertIn(res.data["board"], res_get.data["data"])

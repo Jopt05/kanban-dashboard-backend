@@ -2,8 +2,10 @@ from django.urls import path
 
 from board import views
 
-app_name = "board"
+app_name = "boards"
 
 urlpatterns = [
-    path("users/boards/<int:user_id>/", views.BoardsView.as_view(), name="boards"),
+    path("<int:user_id>/",
+         views.BoardsView.as_view(), name="boards"),
+    path("", views.BoardsView.as_view(), name="boards"),
 ]
