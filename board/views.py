@@ -21,9 +21,9 @@ class BoardsView(APIView):
         IsAuthenticated | ViewPermissions
     ]
 
-    def get(self, request, user_id):
+    def get(self, request, pk):
         """ Returns the boards for the specific user """
-        user_exists = UserProfile.objects.filter(id=user_id).exists()
+        user_exists = UserProfile.objects.filter(id=pk).exists()
 
         if not user_exists:
             response = {
@@ -34,7 +34,7 @@ class BoardsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        queryset = Board.objects.filter(author_id=user_id)
+        queryset = Board.objects.filter(author_id=pk)
         serializer = BoardSerializer(queryset, many=True)
         response = {
             "data": serializer.data,
@@ -75,4 +75,25 @@ class BoardsView(APIView):
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, pk):
+        """ Deletes the specified board """
+        board_exists = Board.objects.filter(id=pk).exists()
+
+        if not board_exists:
+            return Response(
+                {
+                    "msg": "There is no board with the specified id"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        Board.objects.filter(id=pk).delete()
+
+        return Response(
+            {
+                "msg": "Board deleted successfully"
+            },
+            status=status.HTTP_200_OK
         )

@@ -59,9 +59,27 @@ class ModelTest(TestCase):
             reverse(
                 "boards:boards",
                 kwargs={
-                    "user_id": self.user.id
+                    "pk": self.user.id
                 }
             )
         )
 
         self.assertIn(res.data["board"], res_get.data["data"])
+
+    def test_delete_board_from_user_successful(self):
+        """ Test: Delete board from user """
+        res = self.client.post(CREATE_BOARD_URL, self.payload)
+
+        board_id = res.data["board"]["id"]
+
+        res_delete = self.client.delete(
+            reverse(
+                "boards:boards",
+                kwargs={
+                    "pk": board_id
+                }
+            )
+        )
+
+        self.assertEqual(res_delete.status_code, status.HTTP_200_OK)
+        self.assertIn("successfully", res_delete.data["msg"])
